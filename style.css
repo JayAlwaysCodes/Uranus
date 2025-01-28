@@ -28,7 +28,7 @@ body{
     padding: 32px 0 60px;
 }
 
-.container :where(.app-header, .suggestions, .prompt-container, .disclaimer-text) {
+.container :where(.app-header, .suggestions, .prompt-container, .disclaimer-text, .prompt-form) {
     margin: 0 auto;
     width: 100%;
     padding: 0 20px;
@@ -59,9 +59,97 @@ body{
 /* Suggestions List stylings*/
 
 .container .suggestions {
+    padding: 0 20px;
     display: flex;
     gap: 15px;
     margin-top: 9.5vh;
     list-style: none;
     overflow-x: auto;
+    scrollbar-width: none;
+    position: relative;
+}
+
+.suggestions .suggestion-item {
+    width: 228px;
+    padding: 18px;
+    flex-shrink: 0;
+    display: flex;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-radius: 12px;
+    background: var(--secondary-color);
+    transition: 0.3s ease;
+}
+
+.suggestions .suggestion-item:hover{
+    background: var(--secondary-hover-color)
+}
+
+.suggestions .suggestion-item .text {
+    font-size: 1.1rem;
+}
+
+.suggestions .suggestion-item span{
+    height: 45px;
+    width: 45px;
+    margin-top: 35px;
+    display: flex;
+    align-self: flex-end;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #1d7efd;
+    background: var(--primary-color);
+}
+
+.suggestions .suggestion-item:nth-child(2) span{
+    color: #28a745;
+}
+.suggestions .suggestion-item:nth-child(3) span{
+    color: #ffc107;
+}
+.suggestions .suggestion-item:nth-child(4) span{
+    color: #6f42c1;
+}
+
+/* Prompt Coonntainer stylings */
+.prompt-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width:100%;
+    padding: 16px 0;
+    background: var(--primary-color);
+    padding-left: 16px;
+}
+
+.prompt-container :where(.propmt-wrapper, .prompt-form, .prompt-actions){
+    display: flex;
+    gap: 12px;
+    height: 56px;
+    align-items: center;
+}
+.propmt-wrapper .prompt-form{
+    width: 90%;
+    height: 100%;
+    border-radius: 130px;
+    padding-left: 10px;
+    background: var(--secondary-hover-color);
+}
+
+.prompt-form .prompt-input{
+    height: 100%;
+    width: 100%;
+    background: none;
+    outline: none;
+    border: none;
+    font-size: 1rem;
+    padding-left: 24px;
+    color: var(--text-color);
+}
+
+.prompt-wrapper .prompt-form .prompt-input::placeholder{
+    color: var(--placeholder-color);
 }

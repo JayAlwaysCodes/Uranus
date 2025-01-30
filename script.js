@@ -8,6 +8,7 @@ const fileUploadWrapper = promptForm.querySelector(".file-upload-wrapper");
 const API_KEY = "AIzaSyBY-rofFqZ4L8292pJgKTbQXlIB-JTedOI";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
+let typingInterval, controller;
 const chatHistory = [];
 const userData = { message: "", file: {} };
 
@@ -23,22 +24,29 @@ const createMsgElement = (content, ...classes) => {
 const scrollToBottom = () => container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
 
 //function to simulate typingeffect as bot replies
-const typeText = (element, text, delay=10) => {
+const typeText = (element, text, delay = 10) => {
     let index = 0;
-    element.textContent = ""; //clear the inittial text
+    element.textContent = ""; // Clear the initial text
 
-    const typingInterval = setInterval(() => {
-        if(index <  text.length) {
+    // Clear any existing interval
+    if (typingInterval) {
+        clearInterval(typingInterval);
+    }
+
+    // Start a new interval
+    typingInterval = setInterval(() => {
+        if (index < text.length) {
             element.textContent += text.charAt(index);
-
             index++;
             scrollToBottom();
-        }else{
-            clearInterval(typingInterval);
+        } else {
+            clearInterval(typingInterval); // Clear the interval when done
+            typingInterval = null; // Reset the interval variable
+            document.body.classList.remove("bot-responding");
         }
     }, delay);
 };
-
+//generate bot response
 const generateResponse = async (botMsgDiv, retryCount = 0) => {
     if (!botMsgDiv) {
         console.error("botMsgDiv is null or undefined");
@@ -51,18 +59,25 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
         textElement.className = "message-text";
         botMsgDiv.appendChild(textElement);
     }
-    textElement.textContent = "just a sec..."; // Initial message
+    textElement.textContent = "Just a sec..."; // Initial message
 
     // Add user message to the chat history
     chatHistory.push({
         role: "user",
-        parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: (({ fileName, isImage, ...rest}) => rest)(userData.file) }] : [])]
+        parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: (({ fileName, isImage, ...rest }) => rest)(userData.file) }] : [])]
     });
 
     try {
+        // Abort any existing request
+        if (controller) {
+            controller.abort();
+        }
+
+        // Create a new AbortController
+        controller = new AbortController();
+
         // Set a timeout for the API call (e.g., 10 seconds)
         const timeout = 10000; // 10 seconds
-        const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
         // Send the chat history to the API to get a response
@@ -105,7 +120,7 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
 
         // Handle specific errors
         if (error.name === "AbortError") {
-            textElement.textContent = "Request timed out. Please try again.";
+            // Do nothing, just stop the response
         } else if (error.message.includes("overloaded")) {
             if (retryCount < 3) { // Retry up to 3 times
                 textElement.textContent = `Model is overloaded. Retrying (${retryCount + 1}/3)...`;
@@ -116,8 +131,9 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
         } else {
             textElement.textContent = "Sorry, something went wrong. Please try again.";
         }
-    }finally{
+    } finally {
         userData.file = {};
+        controller = null; // Reset the controller
     }
 };
 
@@ -129,6 +145,7 @@ const handleFormSubmit = (e) => {
 
     promptInput.value = "";
     userData.message = userMessage;
+    document.body.classList.add("bot-responding")
     fileUploadWrapper.classList.remove("active", "img-attached", "file-attached");
 
     //generate user message HTML and add in the chats container
@@ -178,6 +195,24 @@ fileInput.addEventListener("change", () => {
 document.querySelector("#cancel-file-btn").addEventListener("click", () => {
     userData.file = {};
     fileUploadWrapper.classList.remove("active", "img-attached", "file-attached");
+});
+
+// Stop bot response
+document.querySelector("#stop-response-btn").addEventListener("click", () => {
+    if (controller) {
+        controller.abort(); // Abort the ongoing fetch request
+    }
+    if (typingInterval) {
+        clearInterval(typingInterval); // Clear the typing effect interval
+        typingInterval = null; // Reset the interval variable
+    }
+
+    // Remove the loading state from the bot's message
+    const botMsgDiv = document.querySelector(".bot-message.loading");
+    if (botMsgDiv) {
+        botMsgDiv.classList.remove("loading"); // Remove loading state
+        document.body.classList.remove("bot-responding");
+    }
 });
 
 promptForm.addEventListener("submit", handleFormSubmit);

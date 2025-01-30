@@ -302,12 +302,20 @@ body{
     display: none;
 }
 
-.prompt-form #cancel-file-btn {
+.prompt-form :is(#cancel-file-btn, #stop-response-btn:hover) {
     color: #d62939
 }
 
 .prompt-form .file-icon {
     color: #1d7efd
+}
+
+.prompt-form #stop-response-btn, body.bot-responding .prompt-form .file-upload-wrapper{
+    display: none;
+}
+
+body.bot-responding .prompt-form #stop-response-btn {
+    display: block;
 }
 
 

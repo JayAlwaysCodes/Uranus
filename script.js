@@ -2,12 +2,14 @@ const container = document.querySelector(".container");
 const chatsContainer = document.querySelector(".chats-container");
 const promptForm = document.querySelector(".prompt-form");
 const promptInput = promptForm.querySelector(".prompt-input");
+const fileInput = promptForm.querySelector("#file-input");
+const fileUploadWrapper = promptForm.querySelector(".file-upload-wrapper");
 
 const API_KEY = "AIzaSyBY-rofFqZ4L8292pJgKTbQXlIB-JTedOI";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-let userMessage = "";
 const chatHistory = [];
+const userData = { message: "", file: {} };
 
 //Function to create message elements 
 const createMsgElement = (content, ...classes) => {
@@ -54,7 +56,7 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
     // Add user message to the chat history
     chatHistory.push({
         role: "user",
-        parts: [{ text: userMessage }]
+        parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: (({ fileName, isImage, ...rest}) => rest)(userData.file) }] : [])]
     });
 
     try {
@@ -90,6 +92,8 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
         // Display the response with a typing effect
         typeText(textElement, responseText.replace(/\*\*([^*]+)\*\*/g, "$1").trim());
 
+        chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+
     } catch (error) {
         console.error("Error generating response:", error);
 
@@ -112,19 +116,26 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
         } else {
             textElement.textContent = "Sorry, something went wrong. Please try again.";
         }
+    }finally{
+        userData.file = {};
     }
 };
 
 //Handle the form submission
 const handleFormSubmit = (e) => {
     e.preventDefault();
-    userMessage = promptInput.value.trim();
+    const userMessage = promptInput.value.trim();
     if(!userMessage) return;
 
     promptInput.value = "";
+    userData.message = userMessage;
+    fileUploadWrapper.classList.remove("active", "img-attached", "file-attached");
 
     //generate user message HTML and add in the chats container
-    const userMsgHTML = `<p class="message-text"></p>`;
+    const userMsgHTML = `
+    <p class="message-text"></p>
+    ${userData.file.data ? (userData.file.isImage ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="img-attached" />` : `<p class="file-attached"><span class="material-symbols-rounded">description</span>${userData.file.fileName}</p>`) : ""}
+    `;
     const userMsgDiv = createMsgElement(userMsgHTML, "user-message");
 
     userMsgDiv.querySelector(".message-text").textContent = userMessage;
@@ -143,4 +154,31 @@ const handleFormSubmit = (e) => {
 
 }
 
+// Handle file input change (file upload)
+fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if(!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    reader.onload = (e) => {
+        fileInput.value = "";
+        const base64String = e.target.result.split(",")[1]
+        fileUploadWrapper.querySelector(".file-preview").src = e.target.result;
+        fileUploadWrapper.classList.add("active", isImage ? "img-attached" : "file-attached");
+
+        //Store file data in userData obj
+        userData.file = { fileName: file.name, data: base64String, mime_type: file.type, isImage };
+    }
+});
+
+//cancel file upload
+document.querySelector("#cancel-file-btn").addEventListener("click", () => {
+    userData.file = {};
+    fileUploadWrapper.classList.remove("active", "img-attached", "file-attached");
+});
+
 promptForm.addEventListener("submit", handleFormSubmit);
+promptForm.querySelector("#add-file-btn").addEventListener("click", () => fileInput.click());

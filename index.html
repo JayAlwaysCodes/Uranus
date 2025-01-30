@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Chatbot</title>
+    <title>Uranus Chatbot</title>
     <!--Linking google Fonts for Icons-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="style.css">
@@ -42,18 +42,25 @@
 
         <!--Prompt Container-->
         <div class="prompt-container">
-            <div class="propmt-wrapper">
+            <div class="prompt-wrapper">
                 <form action="#" class="prompt-form">
                     <input type="text" placeholder="Ask Uranus" class="prompt-input" required>
                     <div class="prompt-actions">
-                        <button id="add-file-btn" type="button" class="material-symbols-rounded">attach_file</button>
+                        <!--file upload wrapper-->
+                        <div class="file-upload-wrapper">
+                            <img src="#" alt="" class="file-preview">
+                            <input type="file" accept="image/*, .pdf, .txt, .csv" id="file-input" hidden>
+                            <button type="button" class="file-icon material-symbols-rounded">description</button>
+                            <button id="add-file-btn" type="button" class="material-symbols-rounded">attach_file</button>
+                            <button id="cancel-file-btn" type="button" class="material-symbols-rounded">close</button>
+                        </div>
                         <button id="send-prompt-btn" class="material-symbols-rounded">arrow_upward</button>
                     </div>
                     
                 </form>
 
                 <button id="theme-toggle-btn" class="material-symbols-rounded">light_mode</button>
-                    <button id="delete-chats-btn" class="material-symbols-rounded">delete</button>
+                <button id="delete-chats-btn" class="material-symbols-rounded">delete</button>
 
                 
 

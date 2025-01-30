@@ -25,7 +25,10 @@ body{
 }
 
 .container {
+    overflow-y: auto;
     padding: 32px 0 60px;
+    max-height: calc(100vh - 127px);
+    scrollbar-color: var(--scrollbar-color) transparent;
 }
 
 .container :where(.app-header, .suggestions, .propmt-wrapper, .disclaimer-text, .message, .prompt-form) {
@@ -145,10 +148,13 @@ body{
 }
 
 .chats-container .bot-message .loading .avatar{
-    animation: rotate 4s linear infinite;
+    animation: spin 2s linear infinite;
 }
 
-@keyframes rotate{
+@keyframes spin{
+    0%{
+        transform: rotate(0deg);
+    }
     100%{
         transform: rotate(360deg);
     }

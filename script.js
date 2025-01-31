@@ -1,3 +1,6 @@
+// // Load environment variables from .env file
+// require('dotenv').config();
+
 const container = document.querySelector(".container");
 const chatsContainer = document.querySelector(".chats-container");
 const promptForm = document.querySelector(".prompt-form");
@@ -6,8 +9,7 @@ const fileInput = promptForm.querySelector("#file-input");
 const fileUploadWrapper = promptForm.querySelector(".file-upload-wrapper");
 const themeToggle = document.querySelector("#theme-toggle-btn");
 
-const API_KEY = "AIzaSyBY-rofFqZ4L8292pJgKTbQXlIB-JTedOI";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+const API_URL = "http://localhost:3000/api/chat";
 
 let typingInterval, controller;
 const chatHistory = [];
@@ -69,28 +71,17 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
     });
 
     try {
-        // Abort any existing request
-        if (controller) {
-            controller.abort();
-        }
+        console.log("Sending request to backend:", { contents: chatHistory }); // Log the request
 
-        // Create a new AbortController
-        controller = new AbortController();
-
-        // Set a timeout for the API call (e.g., 10 seconds)
-        const timeout = 10000; // 10 seconds
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-        // Send the chat history to the API to get a response
-        const response = await fetch(API_URL, {
+        const response = await fetch("http://localhost:3000/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: chatHistory }),
-            signal: controller.signal, // Add timeout signal
         });
-        clearTimeout(timeoutId); // Clear the timeout if the request completes
 
         const data = await response.json();
+        console.log("Backend response:", data); // Log the backend response
+
         if (!response.ok) throw new Error(data.error?.message || "API request failed");
 
         // Process the response text
@@ -111,12 +102,7 @@ const generateResponse = async (botMsgDiv, retryCount = 0) => {
         chatHistory.push({ role: "model", parts: [{ text: responseText }] });
 
     } catch (error) {
-        // console.error("Error generating response:", error);
-        textElement.style.color = "#d62939";
-        textElement.textContent = error.name === "AbortError" ? "Response generate stopped." : error.message;
-        botMsgDiv.classList.remove("loading");
-        document.body.classList.remove("bot-responding");
-        scrollToBottom();
+        console.error("Error generating response:", error); // Log the error
 
         // Stop the avatar animation in case of error
         const avatar = botMsgDiv.querySelector(".avatar");
@@ -244,14 +230,14 @@ document.addEventListener("click", ({ target }) => {
     wrapper.classList.toggle("hide-controls", shouldHide);
 });
 
-//toggle between light and dark mode
+// Toggle between light and dark mode
 themeToggle.addEventListener("click", () => {
     const isLightTheme = document.body.classList.toggle("light-theme");
     localStorage.setItem("themeColor", isLightTheme ? "light_mode" : "dark_mode");
     themeToggle.textContent = isLightTheme ? "dark_mode" : "light_mode";
 });
 
-//set initial theme from local storage
+// Set initial theme from local storage
 const isLightTheme = localStorage.getItem("themeColor") === "light_mode";
 document.body.classList.toggle("light-theme", isLightTheme);
 themeToggle.textContent = isLightTheme ? "dark_mode" : "light_mode";

@@ -19,6 +19,17 @@
     --scrollbar-color: #626a7f;
 }
 
+body.light-theme{
+    /*light theme colors*/
+    --text-color: #090c13;
+    --subheading-color: #7b8cae;
+    --placeholder-color: #606982;
+    --primary-color: #f3f7ff;
+    --secondary-color: #dce6f9;
+    --secondary-hover-color: #d2ddf2;
+    --scrollbar-color: #a2aac2;
+}
+
 body{
     color: var(--text-color);
     background: var(--primary-color);
@@ -72,7 +83,7 @@ body{
     position: relative;
 }
 
-.container :is(.app-header, .suggestions) {
+body.chats-active .container :where(.app-header, .suggestions) {
     display: none;
 }
 
@@ -324,4 +335,25 @@ body.bot-responding .prompt-form #stop-response-btn {
     font-size: 0.9rem;
     padding: 16px 20px 0;
     color: var(--placeholder-color);
+}
+
+/* Responsive media query code for small screens */
+@media (max-width: 768px){
+    .container {
+        padding: 20px 0 100px;
+    }
+
+    .app-header :is(.heading, .sub-heading){
+        font-size: 2rem;
+        line-height: 1.4;
+    }
+
+    .prompt-form .file-upload-wrapper.active #cancel-file-btn{
+        opacity: 0;
+    }
+
+
+    .prompt-wrapper.hide-controls :where(#theme-toggle-btn, #delete-chats-btn){
+        display: none;
+    }
 }
